@@ -1,7 +1,10 @@
 package com.endava.internship.warmup.domain.service;
 
+import java.util.*;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ArrayProcessorWithForLoops implements ArrayProcessor {
 
@@ -11,7 +14,13 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public boolean noneMatch(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        for(int num : input) {
+            if (num % 10 == 0) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -21,7 +30,13 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public boolean someMatch(final int[] input, IntPredicate predicate) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        for(int num : input) {
+            if (predicate.test(num)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -34,7 +49,15 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
     public boolean allMatch(final String[] input,
                             ToIntFunction<String> function,
                             IntPredicate predicate) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        for(String s : input) {
+            int num = function.applyAsInt(s);
+
+            if(!predicate.test(num)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -46,7 +69,12 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] copyValues(int[] input, int startInclusive, int endExclusive) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        if(startInclusive < 0 || endExclusive >= input.length || startInclusive >= endExclusive) {
+            throw new IllegalArgumentException();
+        }
+
+        return Arrays.stream(input, startInclusive, endExclusive)
+                .toArray();
     }
 
     /**
@@ -56,7 +84,9 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] replace(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        return IntStream.range(0, input.length)
+                .map(i -> i % 2 == 0 ? 2 * input[i] : -input[i])
+                .toArray();
     }
 
     /**
@@ -65,7 +95,12 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int findSecondMax(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        int[] newValues = Arrays.stream(input)
+                .sorted()
+                .distinct()
+                .toArray();
+
+        return newValues[newValues.length - 2];
     }
 
     /**
@@ -76,7 +111,21 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] rearrange(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        int[] newValues = new int[input.length];
+
+        int i = 0, j = (int)Arrays.stream(input)
+                .filter(n -> n < 0)
+                .count();
+
+        for(int k = input.length - 1; k >= 0; --k) {
+            if (input[k] < 0) {
+                newValues[i++] = input[k];
+            } else {
+                newValues[j++] = input[k];
+            }
+        }
+
+        return newValues;
     }
 
     /**
@@ -86,7 +135,11 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] filter(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        int threshold = input.length - 10;
+
+        return Arrays.stream(input)
+                .filter(n -> n >= threshold)
+                .toArray();
     }
 
     /**
@@ -99,7 +152,24 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] insertValues(final int[] input, int startInclusive, int[] values) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        if(startInclusive < 0 || startInclusive >= input.length) {
+            throw new IllegalArgumentException();
+        }
+
+        int[] newValues = new int[input.length + values.length];
+        int j = 0;
+
+        for(int i = 0; i < input.length; ++i) {
+            if(i == startInclusive) {
+                while (j < values.length) {
+                    newValues[i + j] = values[j++];
+                }
+            }
+
+            newValues[i + j] = input[i];
+        }
+
+        return newValues;
     }
 
     /**
@@ -111,7 +181,44 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] mergeSortedArrays(int[] input, int[] input2) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        final int N = input.length;
+        final int M = input2.length;
+        int[] newValues = new int[N + M];
+        int i = 0, j = 0, k = 0;
+
+        while(i < N && j < M) {
+            if(input[i] < input2[j]) {
+                if(i > 0 && input[i] < input[i - 1]) {
+                    throw new IllegalArgumentException();
+                }
+
+                newValues[k++] = input[i++];
+            } else {
+                if(j > 0 && input2[j] < input2[j - 1]) {
+                    throw new IllegalArgumentException();
+                }
+
+                newValues[k++] = input2[j++];
+            }
+        }
+
+        while(i < N) {
+            if(i > 0 && input[i] < input[i - 1]) {
+                throw new IllegalArgumentException();
+            }
+
+            newValues[k++] = input[i++];
+        }
+
+        while(j < M) {
+            if(j > 0 && input2[j] < input2[j - 1]) {
+                throw new IllegalArgumentException();
+            }
+
+            newValues[k++] = input2[j++];
+        }
+
+        return newValues;
     }
 
     /**
@@ -126,7 +233,45 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public void validateForMatrixMultiplication(int[][] leftMatrix, int[][] rightMatrix) throws NullPointerException, IllegalArgumentException {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        if(leftMatrix == null || rightMatrix == null) {
+            throw new NullPointerException();
+        }
+
+        for(int[] row : leftMatrix) {
+            if (row == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        for(int[] row : rightMatrix) {
+            if (row == null) {
+                throw new NullPointerException();
+            }
+        }
+
+        if(leftMatrix.length == 0 && rightMatrix.length == 0) {
+            throw new IllegalArgumentException();
+        }
+
+        int numberOfColumnsForLeftMatrix = leftMatrix[0].length;
+        int numberOfColumnsForRightMatrix = rightMatrix[0].length;
+        int numberOfRowsForRightMatrix = rightMatrix.length;
+
+        for(int i = 1; i < leftMatrix.length; ++i) {
+            if (leftMatrix[i].length != numberOfColumnsForLeftMatrix) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        for(int i = 1; i < rightMatrix.length; ++i) {
+            if (rightMatrix[i].length != numberOfColumnsForRightMatrix) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        if(numberOfColumnsForLeftMatrix != numberOfRowsForRightMatrix) {
+            throw new IllegalArgumentException();
+        }
     }
 
     /**
@@ -139,7 +284,20 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[][] matrixMultiplication(final int[][] leftMatrix, final int[][] rightMatrix) throws NullPointerException, IllegalArgumentException {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        validateForMatrixMultiplication(leftMatrix, rightMatrix);
+
+        int M = leftMatrix.length, N = rightMatrix[0].length;
+        int[][] multiplicationMatrix = new int[M][N];
+
+        for(int k = 0; k < leftMatrix.length; ++k) {
+            for(int j = 0; j < rightMatrix[0].length; ++j) {
+                for (int i = 0; i < rightMatrix.length; ++i) {
+                    multiplicationMatrix[k][j] += (leftMatrix[k][i] * rightMatrix[i][j]);
+                }
+            }
+        }
+
+        return multiplicationMatrix;
     }
 
     /**
@@ -148,6 +306,12 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] distinct(final int[] input) {
-        throw new UnsupportedOperationException("Method not implemented yet");
+        Set<Integer> s = Arrays.stream(input)
+                .boxed()
+                .collect(Collectors.toSet());
+
+        return s.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
 }
