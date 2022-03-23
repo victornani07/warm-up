@@ -197,7 +197,7 @@ class ArrayProcessorWithForLoopsTest {
             new int[3]
         };
         int[][] rightMatrix1 = {
-                new int[5],
+            new int[5],
             new int[5],
             new int[5],
             new int[5]

@@ -3,7 +3,6 @@ package com.endava.internship.warmup.domain.service;
 import java.util.*;
 import java.util.function.IntPredicate;
 import java.util.function.ToIntFunction;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class ArrayProcessorWithForLoops implements ArrayProcessor {
@@ -19,7 +18,6 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -35,7 +33,6 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -51,12 +48,10 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
                             IntPredicate predicate) {
         for(String s : input) {
             int num = function.applyAsInt(s);
-
             if(!predicate.test(num)) {
                 return false;
             }
         }
-
         return true;
     }
 
@@ -69,12 +64,12 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] copyValues(int[] input, int startInclusive, int endExclusive) throws IllegalArgumentException {
-        if(startInclusive < 0 || endExclusive >= input.length || startInclusive >= endExclusive) {
+        try {
+            return Arrays.stream(input, startInclusive, endExclusive)
+                    .toArray();
+        } catch (Exception e) {
             throw new IllegalArgumentException();
         }
-
-        return Arrays.stream(input, startInclusive, endExclusive)
-                .toArray();
     }
 
     /**
@@ -124,7 +119,6 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
                 newValues[j++] = input[k];
             }
         }
-
         return newValues;
     }
 
@@ -152,24 +146,26 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] insertValues(final int[] input, int startInclusive, int[] values) throws IllegalArgumentException {
-        if(startInclusive < 0 || startInclusive >= input.length) {
-            throw new IllegalArgumentException();
-        }
-
         int[] newValues = new int[input.length + values.length];
         int j = 0;
 
-        for(int i = 0; i < input.length; ++i) {
-            if(i == startInclusive) {
-                while (j < values.length) {
-                    newValues[i + j] = values[j++];
-                }
+        try {
+            if(startInclusive < 0 || startInclusive >= input.length) {
+                throw new Exception();
             }
-
-            newValues[i + j] = input[i];
+            for (int i = 0; i < input.length; ++i) {
+                if (i == startInclusive) {
+                    while (j < values.length) {
+                        newValues[i + j] = values[j++];
+                    }
+                }
+                newValues[i + j] = input[i];
+            }
+            return newValues;
+        } catch (Exception e) {
+            throw new IllegalArgumentException();
         }
 
-        return newValues;
     }
 
     /**
@@ -181,41 +177,38 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] mergeSortedArrays(int[] input, int[] input2) throws IllegalArgumentException {
-        final int N = input.length;
-        final int M = input2.length;
-        int[] newValues = new int[N + M];
+        final int INPUT_ROWS = input.length;
+        final int INPUT2_ROWS = input2.length;
+        int[] newValues = new int[INPUT_ROWS + INPUT2_ROWS];
         int i = 0, j = 0, k = 0;
 
-        while(i < N && j < M) {
-            if(input[i] < input2[j]) {
-                if(i > 0 && input[i] < input[i - 1]) {
-                    throw new IllegalArgumentException();
+        try {
+            while (i < INPUT_ROWS && j < INPUT2_ROWS) {
+                if (input[i] < input2[j]) {
+                    if (i > 0 && input[i] < input[i - 1]) {
+                        throw new Exception();
+                    }
+                    newValues[k++] = input[i++];
+                } else {
+                    if (j > 0 && input2[j] < input2[j - 1]) {
+                        throw new Exception();
+                    }
+                    newValues[k++] = input2[j++];
                 }
+            }
 
+            while(i < INPUT_ROWS) {
                 newValues[k++] = input[i++];
-            } else {
-                if(j > 0 && input2[j] < input2[j - 1]) {
-                    throw new IllegalArgumentException();
-                }
+            }
 
+            while(j < INPUT2_ROWS) {
+                if(j > 0 && input2[j] < input2[j - 1]) {
+                    throw new Exception();
+                }
                 newValues[k++] = input2[j++];
             }
-        }
-
-        while(i < N) {
-            if(i > 0 && input[i] < input[i - 1]) {
-                throw new IllegalArgumentException();
-            }
-
-            newValues[k++] = input[i++];
-        }
-
-        while(j < M) {
-            if(j > 0 && input2[j] < input2[j - 1]) {
-                throw new IllegalArgumentException();
-            }
-
-            newValues[k++] = input2[j++];
+        } catch (Exception e) {
+            throw new IllegalArgumentException();
         }
 
         return newValues;
@@ -285,9 +278,7 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
     @Override
     public int[][] matrixMultiplication(final int[][] leftMatrix, final int[][] rightMatrix) throws NullPointerException, IllegalArgumentException {
         validateForMatrixMultiplication(leftMatrix, rightMatrix);
-
-        int M = leftMatrix.length, N = rightMatrix[0].length;
-        int[][] multiplicationMatrix = new int[M][N];
+        int[][] multiplicationMatrix = new int[leftMatrix.length][rightMatrix[0].length];
 
         for(int k = 0; k < leftMatrix.length; ++k) {
             for(int j = 0; j < rightMatrix[0].length; ++j) {
@@ -296,7 +287,6 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
                 }
             }
         }
-
         return multiplicationMatrix;
     }
 
@@ -306,12 +296,8 @@ public class ArrayProcessorWithForLoops implements ArrayProcessor {
      */
     @Override
     public int[] distinct(final int[] input) {
-        Set<Integer> s = Arrays.stream(input)
-                .boxed()
-                .collect(Collectors.toSet());
-
-        return s.stream()
-                .mapToInt(Integer::intValue)
+        return IntStream.of(input)
+                .distinct()
                 .toArray();
     }
 }
